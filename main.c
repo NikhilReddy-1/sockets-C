@@ -4,11 +4,15 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <strings.h>
+
 
 int main(int argc, char *argv[])
 {
     int serversock,port,bb,new_sock;
     struct sockaddr_in serverAddr;
+    char buffer[1024];
     int addrLen = sizeof(serverAddr);
 
 
@@ -47,9 +51,31 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    while (1)
+    {
+        bzero(buffer,1024);
 
+        if((read(new_sock,buffer,1024)) == -1){
+            perror("Read error!\n");
+        }
+        printf("Client : %s\n",buffer);
+        bzero(buffer,1024);
 
+        fgets(buffer,1024,stdin);
 
+        if((write(new_sock,buffer,1024)) == -1){
+            perror("Write failure!\n");
+            exit(1);
+        }
+
+        int i = strncmp("bye",buffer,3);
+        if(i == 0)
+            break;
+    }
+
+    close(new_sock);
+    close(serversock);
+    return 0;
 
 
 
